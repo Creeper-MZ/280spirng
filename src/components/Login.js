@@ -66,3 +66,4 @@ const Login = ({ onSubmit, onBack }) => {
         </div>
     );
 };
+export default Login;
