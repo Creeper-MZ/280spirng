@@ -1,0 +1,54 @@
+{
+  "subscribers": [
+    {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "phone": "1234567890",
+      "password": "password123",
+      "address": "123 Main Street, Anytown, USA",
+      "medicalHistory": "No known allergies, high blood pressure"
+    },
+    {
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane.smith@example.com",
+      "phone": "9876543210",
+      "password": "securepass",
+      "address": "456 Oak Avenue, Somewhere, USA",
+      "medicalHistory": "Allergic to penicillin, asthma"
+    }
+  ],
+  "employees": [
+    {
+      "firstName": "ERIS",
+      "lastName": "Employee",
+      "email": "employee@eris.com",
+      "phone": "1234567890",
+      "password": "employee123",
+      "isEmployee": true
+    },
+    {
+      "firstName": "Samuel",
+      "lastName": "Johnson",
+      "email": "samuel@eris.com",
+      "phone": "5556667777",
+      "password": "emt123",
+      "isEmployee": true,
+      "role": "EMT",
+      "qualifications": "Advanced Life Support, Critical Care",
+      "teamID": "Team-A"
+    },
+    {
+      "firstName": "Maria",
+      "lastName": "Garcia",
+      "email": "maria@eris.com",
+      "phone": "7778889999",
+      "password": "supervisor123",
+      "isEmployee": true,
+      "role": "Supervisor",
+      "baseStation": "Station-5",
+      "managedTeams": ["Team-A", "Team-B"]
+    }
+  ]
+}

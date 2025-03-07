@@ -23,7 +23,7 @@ const Login = ({ onSubmit, onBack }) => {
     return (
         <div className="form-container">
             <div className="logo-container">
-                <img src="/eris-logo.png" alt="ERIS Logo" className="system-logo" />
+                <h2 className="eris-logo">ERIS</h2>
             </div>
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
@@ -66,4 +66,5 @@ const Login = ({ onSubmit, onBack }) => {
         </div>
     );
 };
+
 export default Login;

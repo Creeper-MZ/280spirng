@@ -18,14 +18,17 @@ const EmployeeDashboard = ({ onBack }) => {
                     <button className="dashboard-button">View Call History</button>
                     <button className="dashboard-button">Create Incident Report</button>
                 </div>
-                
-                <div className="dashboard-section">
-                    <h3>EMT Management</h3>
-                    <button className="dashboard-button">View EMT Work Hours</button>
-                    <button className="dashboard-button">Track Response Times</button>
-                    <button className="dashboard-button">Manage EMT Records</button>
+            </div>
+            
+            <div className="dashboard-section" style={{ marginTop: '20px' }}>
+                <h3>EMT Management</h3>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button className="dashboard-button" style={{ flex: '1' }}>View EMT Work Hours</button>
+                    <button className="dashboard-button" style={{ flex: '1' }}>Track Response Times</button>
+                    <button className="dashboard-button" style={{ flex: '1' }}>Manage EMT Records</button>
                 </div>
             </div>
+            
             <div className="button-group">
                 <button type="button" className="gradient-button" onClick={onBack}>Back to Main</button>
             </div>

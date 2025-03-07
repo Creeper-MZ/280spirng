@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
@@ -11,34 +11,96 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isEmployee, setIsEmployee] = useState(false);
     const [userData, setUserData] = useState(null);
-    
-    // Mock employee data for demo
-    const employeeCredentials = {
-        email: 'employee@eris.com',
-        phone: '1234567890',
-        password: 'employee123',
-        firstName: 'ERIS',
-        lastName: 'Employee'
+    const [userDatabase, setUserDatabase] = useState({
+        subscribers: [],
+        employees: [
+            {
+                email: 'employee@eris.com',
+                phone: '1234567890',
+                password: 'employee123',
+                firstName: 'ERIS',
+                lastName: 'Employee',
+                isEmployee: true
+            }
+        ]
+    });
+
+    // Load user database from localStorage on initial render
+    useEffect(() => {
+        const savedData = localStorage.getItem('erisUserDatabase');
+        if (savedData) {
+            try {
+                const parsedData = JSON.parse(savedData);
+                setUserDatabase(parsedData);
+            } catch (e) {
+                console.error("Error loading saved data:", e);
+            }
+        }
+    }, []);
+
+    // Save user database to localStorage and export to text file
+    const saveUserDatabase = (updatedDb) => {
+        // Save to localStorage
+        localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
+        
+        // Export to text file
+        const dataStr = JSON.stringify(updatedDb, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'text/plain'});
+        
+        // Create a download link and trigger it
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(dataBlob);
+        downloadLink.download = 'eris_users.txt';
+        downloadLink.click();
+    };
+
+    // Import user database from text file
+    const importUserDatabase = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target.result;
+                const importedData = JSON.parse(content);
+                setUserDatabase(importedData);
+                localStorage.setItem('erisUserDatabase', content);
+                alert('User database imported successfully!');
+            } catch (err) {
+                alert('Error importing file: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
     };
 
     const handleLogin = (data) => {
         if (data.isEmployee) {
-            // Handle employee login
-            if (data.password === employeeCredentials.password && 
-                (data.identifier === employeeCredentials.email || data.identifier === employeeCredentials.phone)) {
+            // Check against employees list
+            const employee = userDatabase.employees.find(emp => 
+                emp.password === data.password && 
+                (emp.email === data.identifier || emp.phone === data.identifier)
+            );
+            
+            if (employee) {
                 setIsLoggedIn(true);
                 setIsEmployee(true);
-                setUserData(employeeCredentials);
+                setUserData(employee);
                 setCurrentView('main');
             } else {
                 alert('Invalid employee credentials');
             }
         } else {
-            // Handle subscriber login
-            if (userData && data.password === userData.password &&
-                (data.identifier === userData.email || data.identifier === userData.phone)) {
+            // Check against subscribers list
+            const subscriber = userDatabase.subscribers.find(sub => 
+                sub.password === data.password && 
+                (sub.email === data.identifier || sub.phone === data.identifier)
+            );
+            
+            if (subscriber) {
                 setIsLoggedIn(true);
                 setIsEmployee(false);
+                setUserData(subscriber);
                 setCurrentView('main');
             } else {
                 alert('Invalid credentials');
@@ -47,13 +109,43 @@ function App() {
     };
 
     const handleSignUp = (data) => {
-        setUserData(data);
+        // Add the new user to subscribers list
+        const updatedDb = {
+            ...userDatabase,
+            subscribers: [...userDatabase.subscribers, data]
+        };
+        
+        setUserDatabase(updatedDb);
+        saveUserDatabase(updatedDb);
+        
         alert('Registration successful! Please login.');
         setCurrentView('main');
     };
 
     const handleUpdateInfo = (data) => {
-        setUserData(prev => ({...prev, ...data}));
+        // Update user data in the appropriate list
+        let updatedDb;
+        
+        if (isEmployee) {
+            updatedDb = {
+                ...userDatabase,
+                employees: userDatabase.employees.map(emp => 
+                    (emp.email === userData.email) ? {...emp, ...data} : emp
+                )
+            };
+        } else {
+            updatedDb = {
+                ...userDatabase,
+                subscribers: userDatabase.subscribers.map(sub => 
+                    (sub.email === userData.email) ? {...sub, ...data} : sub
+                )
+            };
+        }
+        
+        setUserDatabase(updatedDb);
+        setUserData(prevData => ({...prevData, ...data}));
+        localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
+        
         alert('Information updated successfully!');
         setCurrentView('main');
     };
@@ -82,8 +174,8 @@ function App() {
                         {!isLoggedIn ? (
                             <>
                                 <div className="logo-container main-logo">
-                                    <img src="/eris-logo.png" alt="ERIS Logo" className="system-logo" />
-                                    <h1>Emergency Response Information System</h1>
+                                    <h1 className="eris-logo">ERIS</h1>
+                                    <p className="eris-subtitle">Emergency Response Information System</p>
                                 </div>
                                 <button className="gradient-button login" onClick={() => setCurrentView('login')}>
                                     LOGIN
@@ -91,14 +183,29 @@ function App() {
                                 <button className="gradient-button signup" onClick={() => setCurrentView('signup')}>
                                     SIGN UP
                                 </button>
+                                <div className="admin-controls">
+                                    <input
+                                        type="file"
+                                        id="import-database"
+                                        accept=".txt"
+                                        style={{ display: 'none' }}
+                                        onChange={importUserDatabase}
+                                    />
+                                    <label className="admin-link" htmlFor="import-database">
+                                        Import User Database
+                                    </label>
+                                </div>
                             </>
                         ) : isEmployee ? (
                             <>
                                 <div className="welcome-message">
-                                    Welcome, ERIS Employee!
+                                    Welcome, {userData.firstName}!
                                 </div>
                                 <button className="gradient-button employee" onClick={() => setCurrentView('employeeDashboard')}>
                                     EMPLOYEE DASHBOARD
+                                </button>
+                                <button className="gradient-button view" onClick={() => setCurrentView('viewInfo')}>
+                                    MY PROFILE
                                 </button>
                                 <button className="gradient-button logout" onClick={handleLogout}>
                                     LOGOUT
@@ -124,70 +231,6 @@ function App() {
                 );
         }
     };
-
-    // Create a placeholder ERIS logo
-    const createERISLogo = () => {
-        // Check if we need to create a placeholder logo
-        const img = new Image();
-        img.src = '/eris-logo.png';
-        
-        img.onerror = () => {
-            // Create a canvas element
-            const canvas = document.createElement('canvas');
-            canvas.width = 200;
-            canvas.height = 200;
-            const ctx = canvas.getContext('2d');
-            
-            // Draw a circle background
-            ctx.beginPath();
-            ctx.arc(100, 100, 90, 0, 2 * Math.PI);
-            ctx.fillStyle = '#2a5298';
-            ctx.fill();
-            
-            // Draw a star (emergency symbol)
-            ctx.beginPath();
-            ctx.moveTo(100, 30);
-            for (let i = 1; i < 5; i++) {
-                ctx.lineTo(
-                    100 + 70 * Math.cos((0.5 * i * 2 * Math.PI) / 5 - Math.PI / 2),
-                    100 + 70 * Math.sin((0.5 * i * 2 * Math.PI) / 5 - Math.PI / 2)
-                );
-                ctx.lineTo(
-                    100 + 30 * Math.cos(((0.5 * i + 0.5) * 2 * Math.PI) / 5 - Math.PI / 2),
-                    100 + 30 * Math.sin(((0.5 * i + 0.5) * 2 * Math.PI) / 5 - Math.PI / 2)
-                );
-            }
-            ctx.closePath();
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            
-            // Add "ERIS" text
-            ctx.font = 'bold 36px Arial';
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('ERIS', 100, 100);
-            
-            // Convert to data URL and save as image
-            const dataURL = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = 'eris-logo.png';
-            
-            // Create a temporary image in public folder (for demo purposes only)
-            // In a real app, you'd save this properly to the server
-            const img = document.createElement('img');
-            img.src = dataURL;
-            img.style.display = 'none';
-            img.id = 'temp-logo';
-            document.body.appendChild(img);
-        };
-    };
-    
-    // Run once when component mounts
-    useState(() => {
-        createERISLogo();
-    }, []);
 
     return (
         <div className="App">
