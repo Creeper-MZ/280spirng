@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 const Login = ({ onSubmit, onBack }) => {
     const [formData, setFormData] = useState({
         identifier: '',
-        password: ''
+        password: '',
+        isEmployee: false
     });
 
     const handleSubmit = (e) => {
@@ -12,14 +13,18 @@ const Login = ({ onSubmit, onBack }) => {
     };
 
     const handleChange = (e) => {
+        const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [e.target.name]: value
         });
     };
 
     return (
         <div className="form-container">
+            <div className="logo-container">
+                <img src="/eris-logo.png" alt="ERIS Logo" className="system-logo" />
+            </div>
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -42,6 +47,17 @@ const Login = ({ onSubmit, onBack }) => {
                         required
                     />
                 </div>
+                <div className="form-group checkbox-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            name="isEmployee"
+                            checked={formData.isEmployee}
+                            onChange={handleChange}
+                        />
+                        <span>I am an employee (EMT, Operator, Supervisor)</span>
+                    </label>
+                </div>
                 <div className="button-group">
                     <button type="submit" className="gradient-button login">Login</button>
                     <button type="button" className="gradient-button" onClick={onBack}>Back</button>
@@ -50,5 +66,3 @@ const Login = ({ onSubmit, onBack }) => {
         </div>
     );
 };
-
-export default Login;
