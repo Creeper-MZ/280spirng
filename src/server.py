@@ -107,7 +107,18 @@ def update_response():
     
     write_data_file(RESPONSES_FILE, responses_data)
     return jsonify({"success": True})
+# 添加无前缀的用户路由
+@app.route('/users', methods=['GET'])
+def get_users_alt():
+    return get_users()
 
+@app.route('/teams', methods=['GET'])
+def get_teams_alt():
+    return get_teams()
+
+@app.route('/responses', methods=['GET'])
+def get_responses_alt():
+    return get_responses()
 # 初始化数据文件
 def initialize_data_files():
     # 初始化用户数据
