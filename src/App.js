@@ -245,6 +245,11 @@ function App() {
         
         alert('Response updated successfully!');
     };
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setIsEmployee(false);
+        setCurrentView('main');
+    };
 
     const renderContent = () => {
         if (loading) {
