@@ -9,7 +9,7 @@ import TeamManagement from './components/TeamManagement';
 import ResponseTracking from './components/ResponseTracking';
 
 // API base URL - change this to match your Python server
-const API_URL = 'http://154.26.186.9:5000/api';
+const API_URL = '/api';
 
 function App() {
     const [currentView, setCurrentView] = useState('main');
