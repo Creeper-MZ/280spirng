@@ -14,6 +14,8 @@
 .button-container, .form-container {
   display: flex;
   flex-direction: column;
+  align-items: center; /* 水平居中对齐项目 */
+  justify-content: center;
   gap: 20px;
   padding: 40px;
   background: rgba(255, 255, 255, 0.1);
@@ -36,11 +38,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
+  width: 100%; /* 使容器占满宽度 */
+  margin-bottom: 20px;
 }
 
 .main-logo {
   margin-bottom: 20px;
+  width: 100%; /* 确保logo容器占满宽度 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .eris-logo {
@@ -57,6 +64,7 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
   margin: 5px 0 0 0;
+  text-align: center; /* 确保副标题居中 */
 }
 
 .welcome-message {
@@ -65,22 +73,26 @@
   font-weight: 600;
   margin-bottom: 20px;
   text-align: center; /* 确保欢迎文字居中 */
+  width: 100%; /* 确保宽度占满 */
 }
 
 .form-container h2 {
   color: white;
   margin: 0 0 20px 0;
   text-align: center; /* 确保标题居中 */
+  width: 100%; /* 确保宽度占满 */
 }
 
 .form-container h3 {
   color: white;
   margin: 0 0 15px 0;
+  text-align: center;
 }
 
 .form-container h4 {
   color: white;
   margin: 20px 0 10px 0;
+  text-align: center;
 }
 
 .form-group {
@@ -160,6 +172,7 @@
   justify-content: center;
   margin-top: 20px;
   flex-wrap: wrap;
+  width: 100%; /* 确保按钮组占满容器宽度 */
 }
 
 .gradient-button {
@@ -175,6 +188,8 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
+  margin: 0 auto; /* 添加这行确保按钮本身也居中 */
+  display: block; /* 添加这行让margin: 0 auto生效 */
 }
 
 .gradient-button::before {
@@ -284,6 +299,10 @@
 @media (min-width: 768px) {
   .dashboard-options {
     flex-direction: row;
+  }
+  
+  .button-container {
+    max-width: 600px; /* 在大屏幕上控制按钮容器的最大宽度 */
   }
 }
 
