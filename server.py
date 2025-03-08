@@ -4,14 +4,15 @@ import json
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# 配置CORS允许跨域请求
+CORS(app)
 
-# Data file paths
+# 数据文件路径
 USERS_FILE = 'eris_users.txt'
 TEAMS_FILE = 'teams.txt'
 RESPONSES_FILE = 'responses.txt'
 
-# Helper functions to read/write data files
+# 辅助函数：读取数据文件
 def read_data_file(filename):
     if not os.path.exists(filename):
         if filename == USERS_FILE:
@@ -29,12 +30,13 @@ def read_data_file(filename):
         print(f"Error reading {filename}: {e}")
         return {}
 
+# 辅助函数：写入数据文件
 def write_data_file(filename, data):
     with open(filename, 'w') as file:
         json.dump(data, file, indent=2)
     return True
 
-# Routes for user management
+# 用户管理路由
 @app.route('/api/users', methods=['GET'])
 def get_users():
     return jsonify(read_data_file(USERS_FILE))
@@ -52,7 +54,7 @@ def add_user():
     write_data_file(USERS_FILE, users_data)
     return jsonify({"success": True})
 
-# Routes for team management
+# 团队管理路由
 @app.route('/api/teams', methods=['GET'])
 def get_teams():
     return jsonify(read_data_file(TEAMS_FILE))
@@ -62,8 +64,11 @@ def update_team():
     data = request.get_json()
     teams_data = read_data_file(TEAMS_FILE)
     
-    # Find and update the team or add a new one
+    # 找到并更新团队，或添加新团队
     found = False
+    if 'teams' not in teams_data:
+        teams_data['teams'] = []
+        
     for i, team in enumerate(teams_data['teams']):
         if team['id'] == data['id']:
             teams_data['teams'][i] = data
@@ -76,7 +81,7 @@ def update_team():
     write_data_file(TEAMS_FILE, teams_data)
     return jsonify({"success": True})
 
-# Routes for response tracking
+# 响应追踪路由
 @app.route('/api/responses', methods=['GET'])
 def get_responses():
     return jsonify(read_data_file(RESPONSES_FILE))
@@ -86,8 +91,11 @@ def update_response():
     data = request.get_json()
     responses_data = read_data_file(RESPONSES_FILE)
     
-    # Find and update the response or add a new one
+    # 找到并更新响应，或添加新响应
     found = False
+    if 'responses' not in responses_data:
+        responses_data['responses'] = []
+        
     for i, response in enumerate(responses_data['responses']):
         if response['id'] == data['id']:
             responses_data['responses'][i] = data
@@ -100,8 +108,9 @@ def update_response():
     write_data_file(RESPONSES_FILE, responses_data)
     return jsonify({"success": True})
 
-if __name__ == '__main__':
-    # Initialize files if they don't exist
+# 初始化数据文件
+def initialize_data_files():
+    # 初始化用户数据
     if not os.path.exists(USERS_FILE):
         write_data_file(USERS_FILE, {
             "subscribers": [],
@@ -115,6 +124,7 @@ if __name__ == '__main__':
             }]
         })
     
+    # 初始化团队数据
     if not os.path.exists(TEAMS_FILE):
         write_data_file(TEAMS_FILE, {
             "teams": [
@@ -163,6 +173,7 @@ if __name__ == '__main__':
             ]
         })
     
+    # 初始化响应数据
     if not os.path.exists(RESPONSES_FILE):
         write_data_file(RESPONSES_FILE, {
             "responses": [
@@ -177,5 +188,9 @@ if __name__ == '__main__':
                 }
             ]
         })
-    
+
+if __name__ == '__main__':
+    # 初始化数据文件
+    initialize_data_files()
+    # 运行应用
     app.run(debug=True, port=5000)

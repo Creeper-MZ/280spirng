@@ -24,30 +24,30 @@ function App() {
     const [responses, setResponses] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Load data from API on initial render
+    // 初始化时从API加载数据
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch users
-                const usersResponse = await fetch(`${API_URL}/users`);
+                // 请求用户数据
+                const usersResponse = await fetch('/api/users');
                 const usersData = await usersResponse.json();
                 setUserDatabase(usersData);
                 
-                // Fetch teams
-                const teamsResponse = await fetch(`${API_URL}/teams`);
+                // 请求团队数据
+                const teamsResponse = await fetch('/api/teams');
                 const teamsData = await teamsResponse.json();
                 setTeams(teamsData.teams || []);
                 
-                // Fetch responses
-                const responsesResponse = await fetch(`${API_URL}/responses`);
+                // 请求响应数据
+                const responsesResponse = await fetch('/api/responses');
                 const responsesData = await responsesResponse.json();
                 setResponses(responsesData.responses || []);
             } catch (error) {
                 console.error("Error loading data:", error);
                 alert("Error connecting to server. Please make sure the Python API is running.");
                 
-                // Load fallback data from localStorage if available
+                // 从localStorage加载备用数据
                 const savedUsers = localStorage.getItem('erisUserDatabase');
                 if (savedUsers) {
                     try {
@@ -63,7 +63,7 @@ function App() {
         
         fetchData();
     }, []);
-
+    
     const handleLogin = (data) => {
         if (data.isEmployee) {
             // Check against employees list
@@ -99,8 +99,8 @@ function App() {
     };
 
     const handleSignUp = (data) => {
-        // Send new user to API
-        fetch(`${API_URL}/users`, {
+        // 发送新用户数据到API
+        fetch('/api/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -110,15 +110,13 @@ function App() {
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                // Update local state
+                // 更新本地状态
                 const updatedDb = {
                     ...userDatabase,
                     subscribers: [...userDatabase.subscribers, data]
                 };
                 
                 setUserDatabase(updatedDb);
-                
-                // Also update localStorage as backup
                 localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
                 
                 alert('Registration successful! Please login.');
@@ -130,7 +128,7 @@ function App() {
         .catch(error => {
             console.error('Error registering user:', error);
             
-            // Fallback to localStorage if API fails
+            // API请求失败时使用localStorage作为备用
             const updatedDb = {
                 ...userDatabase,
                 subscribers: [...userDatabase.subscribers, data]
@@ -147,7 +145,7 @@ function App() {
     const handleUpdateInfo = (data) => {
         const updatedUser = {...userData, ...data};
         
-        // Update local state first
+        // 先更新本地状态
         if (isEmployee) {
             const updatedDb = {
                 ...userDatabase,
@@ -170,11 +168,11 @@ function App() {
             localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
         }
         
-        // Update user data
+        // 更新用户数据
         setUserData(updatedUser);
         
-        // Then try to update the API
-        fetch(`${API_URL}/users`, {
+        // 然后尝试更新API
+        fetch('/api/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -190,14 +188,8 @@ function App() {
         setCurrentView('main');
     };
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setIsEmployee(false);
-        setCurrentView('main');
-    };
-
     const handleTeamUpdate = (updatedTeam) => {
-        // Update local state first
+        // 先更新本地状态
         const newTeams = [...teams];
         const index = newTeams.findIndex(t => t.id === updatedTeam.id);
         
@@ -209,8 +201,8 @@ function App() {
         
         setTeams(newTeams);
         
-        // Try to update the API
-        fetch(`${API_URL}/teams`, {
+        // 尝试更新API
+        fetch('/api/teams', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -226,7 +218,7 @@ function App() {
     };
 
     const handleResponseUpdate = (updatedResponse) => {
-        // Update local state first
+        // 先更新本地状态
         const newResponses = [...responses];
         const index = newResponses.findIndex(r => r.id === updatedResponse.id);
         
@@ -238,8 +230,8 @@ function App() {
         
         setResponses(newResponses);
         
-        // Try to update the API
-        fetch(`${API_URL}/responses`, {
+        // 尝试更新API
+        fetch('/api/responses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
