@@ -9,7 +9,7 @@ import TeamManagement from './components/TeamManagement';
 import ResponseTracking from './components/ResponseTracking';
 
 // API base URL - change this to match your Python server
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://154.26.186.9:5000/api';
 
 function App() {
     const [currentView, setCurrentView] = useState('main');
@@ -25,26 +25,22 @@ function App() {
     const [loading, setLoading] = useState(true);
 
     // 初始化时从API加载数据
-    // In App.js, modify your fetch calls like this:
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Use absolute URLs for development
-                const API_BASE = 'http://localhost:5000';
-                
                 // 请求用户数据
-                const usersResponse = await fetch(`${API_BASE}/api/users`);
+                const usersResponse = await fetch(`${API_URL}/users`);
                 const usersData = await usersResponse.json();
                 setUserDatabase(usersData);
                 
                 // 请求团队数据
-                const teamsResponse = await fetch(`${API_BASE}/api/teams`);
+                const teamsResponse = await fetch(`${API_URL}/teams`);
                 const teamsData = await teamsResponse.json();
                 setTeams(teamsData.teams || []);
                 
                 // 请求响应数据
-                const responsesResponse = await fetch(`${API_BASE}/api/responses`);
+                const responsesResponse = await fetch(`${API_URL}/responses`);
                 const responsesData = await responsesResponse.json();
                 setResponses(responsesData.responses || []);
             } catch (error) {
@@ -104,7 +100,7 @@ function App() {
 
     const handleSignUp = (data) => {
         // 发送新用户数据到API
-        fetch('/api/users', {
+        fetch(`${API_URL}/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -176,7 +172,7 @@ function App() {
         setUserData(updatedUser);
         
         // 然后尝试更新API
-        fetch('/api/users', {
+        fetch(`${API_URL}/users`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -206,7 +202,7 @@ function App() {
         setTeams(newTeams);
         
         // 尝试更新API
-        fetch('/api/teams', {
+        fetch(`${API_URL}/teams`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -235,7 +231,7 @@ function App() {
         setResponses(newResponses);
         
         // 尝试更新API
-        fetch('/api/responses', {
+        fetch(`${API_URL}/responses`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

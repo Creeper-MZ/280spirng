@@ -4,13 +4,21 @@ import json
 import os
 
 app = Flask(__name__)
-# 配置CORS允许跨域请求
-CORS(app)
+# 配置CORS允许跨域请求 - 更详细的配置
+CORS(app, resources={r"/*": {"origins": "*"}})
 
-# 数据文件路径
-USERS_FILE = 'eris_users.txt'
-TEAMS_FILE = 'teams.txt'
-RESPONSES_FILE = 'responses.txt'
+# 获取当前脚本所在的目录
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# 数据文件路径 - 使用绝对路径
+USERS_FILE = os.path.join(BASE_DIR, 'eris_users.txt')
+TEAMS_FILE = os.path.join(BASE_DIR, 'teams.txt')
+RESPONSES_FILE = os.path.join(BASE_DIR, 'responses.txt')
+
+# 打印文件路径以便调试
+print(f"Users file path: {USERS_FILE}")
+print(f"Teams file path: {TEAMS_FILE}")
+print(f"Responses file path: {RESPONSES_FILE}")
 
 # 辅助函数：读取数据文件
 def read_data_file(filename):
@@ -39,10 +47,12 @@ def write_data_file(filename, data):
 # 用户管理路由
 @app.route('/api/users', methods=['GET'])
 def get_users():
+    print("API /api/users endpoint called")
     return jsonify(read_data_file(USERS_FILE))
 
 @app.route('/api/users', methods=['POST'])
 def add_user():
+    print("API /api/users POST endpoint called")
     data = request.get_json()
     users_data = read_data_file(USERS_FILE)
     
@@ -57,10 +67,12 @@ def add_user():
 # 团队管理路由
 @app.route('/api/teams', methods=['GET'])
 def get_teams():
+    print("API /api/teams endpoint called")
     return jsonify(read_data_file(TEAMS_FILE))
 
 @app.route('/api/teams', methods=['POST'])
 def update_team():
+    print("API /api/teams POST endpoint called")
     data = request.get_json()
     teams_data = read_data_file(TEAMS_FILE)
     
@@ -84,10 +96,12 @@ def update_team():
 # 响应追踪路由
 @app.route('/api/responses', methods=['GET'])
 def get_responses():
+    print("API /api/responses endpoint called")
     return jsonify(read_data_file(RESPONSES_FILE))
 
 @app.route('/api/responses', methods=['POST'])
 def update_response():
+    print("API /api/responses POST endpoint called")
     data = request.get_json()
     responses_data = read_data_file(RESPONSES_FILE)
     
@@ -107,21 +121,26 @@ def update_response():
     
     write_data_file(RESPONSES_FILE, responses_data)
     return jsonify({"success": True})
-# 添加无前缀的用户路由
+
+# 添加无前缀的用户路由 - 直接返回数据
 @app.route('/users', methods=['GET'])
 def get_users_alt():
+    print("API /users endpoint called")
     users_data = read_data_file(USERS_FILE)
-    return jsonify(users_data)  # Return directly instead of calling get_users()
+    return jsonify(users_data)
 
 @app.route('/teams', methods=['GET'])
 def get_teams_alt():
+    print("API /teams endpoint called")
     teams_data = read_data_file(TEAMS_FILE)
-    return jsonify(teams_data)  # Return directly instead of calling get_teams()
+    return jsonify(teams_data)
 
 @app.route('/responses', methods=['GET'])
 def get_responses_alt():
+    print("API /responses endpoint called")
     responses_data = read_data_file(RESPONSES_FILE)
-    return jsonify(responses_data)  # Return directly instead of calling get_responses()
+    return jsonify(responses_data)
+
 # 初始化数据文件
 def initialize_data_files():
     # 初始化用户数据
@@ -206,5 +225,5 @@ def initialize_data_files():
 if __name__ == '__main__':
     # 初始化数据文件
     initialize_data_files()
-    # 运行应用
-    app.run(debug=True, port=5000)
+    # 运行应用 - 监听所有接口
+    app.run(debug=True, port=5000, host='0.0.0.0')
