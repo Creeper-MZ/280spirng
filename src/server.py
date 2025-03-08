@@ -110,15 +110,18 @@ def update_response():
 # 添加无前缀的用户路由
 @app.route('/users', methods=['GET'])
 def get_users_alt():
-    return get_users()
+    users_data = read_data_file(USERS_FILE)
+    return jsonify(users_data)  # Return directly instead of calling get_users()
 
 @app.route('/teams', methods=['GET'])
 def get_teams_alt():
-    return get_teams()
+    teams_data = read_data_file(TEAMS_FILE)
+    return jsonify(teams_data)  # Return directly instead of calling get_teams()
 
 @app.route('/responses', methods=['GET'])
 def get_responses_alt():
-    return get_responses()
+    responses_data = read_data_file(RESPONSES_FILE)
+    return jsonify(responses_data)  # Return directly instead of calling get_responses()
 # 初始化数据文件
 def initialize_data_files():
     # 初始化用户数据

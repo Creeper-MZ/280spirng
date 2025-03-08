@@ -25,22 +25,26 @@ function App() {
     const [loading, setLoading] = useState(true);
 
     // 初始化时从API加载数据
+    // In App.js, modify your fetch calls like this:
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
+                // Use absolute URLs for development
+                const API_BASE = 'http://localhost:5000';
+                
                 // 请求用户数据
-                const usersResponse = await fetch('/api/users');
+                const usersResponse = await fetch(`${API_BASE}/api/users`);
                 const usersData = await usersResponse.json();
                 setUserDatabase(usersData);
                 
                 // 请求团队数据
-                const teamsResponse = await fetch('/api/teams');
+                const teamsResponse = await fetch(`${API_BASE}/api/teams`);
                 const teamsData = await teamsResponse.json();
                 setTeams(teamsData.teams || []);
                 
                 // 请求响应数据
-                const responsesResponse = await fetch('/api/responses');
+                const responsesResponse = await fetch(`${API_BASE}/api/responses`);
                 const responsesData = await responsesResponse.json();
                 setResponses(responsesData.responses || []);
             } catch (error) {
