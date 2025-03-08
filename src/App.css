@@ -26,7 +26,7 @@
 
 .form-container {
   min-width: 300px;
-  max-width: 500px;
+  max-width: 90%;
 }
 
 .logo-container {
@@ -72,6 +72,11 @@
   margin: 0 0 15px 0;
 }
 
+.form-container h4 {
+  color: white;
+  margin: 20px 0 10px 0;
+}
+
 .form-group {
   width: 100%;
   margin-bottom: 15px;
@@ -98,7 +103,7 @@
   margin-left: 5px;
 }
 
-.form-group input, .form-group textarea {
+.form-group input, .form-group textarea, .form-group select {
   width: 100%;
   padding: 12px;
   border: none;
@@ -111,6 +116,13 @@
 .form-group textarea {
   resize: vertical;
   min-height: 60px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: white;
+  font-weight: 500;
 }
 
 .info-display {
@@ -226,10 +238,35 @@
   color: white;
 }
 
+/* Loading styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-top: 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Employee Dashboard Styles */
 .employee-dashboard {
   min-width: 300px;
-  max-width: 800px;
+  max-width: 1000px;
 }
 
 .dashboard-options {
@@ -267,4 +304,274 @@
 .dashboard-button:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
+}
+
+/* Team Management Styles */
+.team-management, .response-tracking {
+  min-width: 300px;
+  max-width: 1200px;
+}
+
+.team-management-content, .response-tracking-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .team-management-content, .response-tracking-content {
+    flex-direction: row;
+  }
+}
+
+.team-list, .response-list {
+  flex: 1;
+}
+
+.team-details, .response-details {
+  flex: 2;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.team-buttons, .response-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.team-button, .response-button {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.team-button:hover, .response-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.team-button.selected, .response-button.selected {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+
+.status-indicator.available {
+  background-color: #4CAF50;
+}
+
+.status-indicator.on-call, .status-indicator.dispatched {
+  background-color: #FF9800;
+}
+
+.status-indicator.on-scene {
+  background-color: #2196F3;
+}
+
+.status-indicator.unavailable, .status-indicator.completed {
+  background-color: #F44336;
+}
+
+.team-button.new-team, .response-button.new-response {
+  background: rgba(75, 192, 192, 0.2);
+  text-align: center;
+}
+
+.team-button.new-team:hover, .response-button.new-response:hover {
+  background: rgba(75, 192, 192, 0.3);
+}
+
+.team-info, .team-edit-form, .response-info, .response-edit-form {
+  color: white;
+}
+
+.member-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.member-card h5 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.member-card p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.qualification {
+  color: #8BE9FD;
+  font-weight: 500;
+}
+
+.member-edit {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.add-button, .remove-button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-top: 5px;
+}
+
+.add-button {
+  background: rgba(75, 192, 192, 0.2);
+  color: white;
+  width: 100%;
+}
+
+.add-button:hover {
+  background: rgba(75, 192, 192, 0.3);
+}
+
+.remove-button {
+  background: rgba(255, 99, 132, 0.2);
+  color: white;
+}
+
+.remove-button:hover {
+  background: rgba(255, 99, 132, 0.3);
+}
+
+.status {
+  font-weight: 600;
+}
+
+.status.available {
+  color: #4CAF50;
+}
+
+.status.on-call, .status.dispatched {
+  color: #FF9800;
+}
+
+.status.on-scene {
+  color: #2196F3;
+}
+
+.status.unavailable, .status.completed {
+  color: #F44336;
+}
+
+.priority {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.priority-1 {
+  background: rgba(75, 192, 192, 0.2);
+  color: #4dd0e1;
+}
+
+.priority-2 {
+  background: rgba(255, 159, 64, 0.2);
+  color: #ffb74d;
+}
+
+.priority-3 {
+  background: rgba(255, 205, 86, 0.2);
+  color: #ffd54f;
+}
+
+.priority-4 {
+  background: rgba(255, 99, 132, 0.2);
+  color: #ef5350;
+}
+
+.response-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.response-location {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.timeline {
+  margin-top: 20px;
+}
+
+.timeline-items {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-items:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -10px;
+  top: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  z-index: 1;
+}
+
+.timeline-item.inactive .timeline-marker {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-title {
+  font-weight: 600;
+}
+
+.timeline-time {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.timeline-item.inactive .timeline-content {
+  opacity: 0.5;
 }

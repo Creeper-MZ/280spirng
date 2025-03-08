@@ -5,6 +5,11 @@ import SignUp from './components/SignUp';
 import ViewInfo from './components/ViewInfo';
 import UpdateInfo from './components/UpdateInfo';
 import EmployeeDashboard from './components/EmployeeDashboard';
+import TeamManagement from './components/TeamManagement';
+import ResponseTracking from './components/ResponseTracking';
+
+// API base URL - change this to match your Python server
+const API_URL = 'http://localhost:5000/api';
 
 function App() {
     const [currentView, setCurrentView] = useState('main');
@@ -13,66 +18,51 @@ function App() {
     const [userData, setUserData] = useState(null);
     const [userDatabase, setUserDatabase] = useState({
         subscribers: [],
-        employees: [
-            {
-                email: 'employee@eris.com',
-                phone: '1234567890',
-                password: 'employee123',
-                firstName: 'ERIS',
-                lastName: 'Employee',
-                isEmployee: true
-            }
-        ]
+        employees: []
     });
+    const [teams, setTeams] = useState([]);
+    const [responses, setResponses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Load user database from localStorage on initial render
+    // Load data from API on initial render
     useEffect(() => {
-        const savedData = localStorage.getItem('erisUserDatabase');
-        if (savedData) {
+        const fetchData = async () => {
+            setLoading(true);
             try {
-                const parsedData = JSON.parse(savedData);
-                setUserDatabase(parsedData);
-            } catch (e) {
-                console.error("Error loading saved data:", e);
-            }
-        }
-    }, []);
-
-    // Save user database to localStorage and export to text file
-    const saveUserDatabase = (updatedDb) => {
-        // Save to localStorage
-        localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
-        
-        // Export to text file
-        const dataStr = JSON.stringify(updatedDb, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'text/plain'});
-        
-        // Create a download link and trigger it
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(dataBlob);
-        downloadLink.download = 'eris_users.txt';
-        downloadLink.click();
-    };
-
-    // Import user database from text file
-    const importUserDatabase = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const content = e.target.result;
-                const importedData = JSON.parse(content);
-                setUserDatabase(importedData);
-                localStorage.setItem('erisUserDatabase', content);
-                alert('User database imported successfully!');
-            } catch (err) {
-                alert('Error importing file: ' + err.message);
+                // Fetch users
+                const usersResponse = await fetch(`${API_URL}/users`);
+                const usersData = await usersResponse.json();
+                setUserDatabase(usersData);
+                
+                // Fetch teams
+                const teamsResponse = await fetch(`${API_URL}/teams`);
+                const teamsData = await teamsResponse.json();
+                setTeams(teamsData.teams || []);
+                
+                // Fetch responses
+                const responsesResponse = await fetch(`${API_URL}/responses`);
+                const responsesData = await responsesResponse.json();
+                setResponses(responsesData.responses || []);
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Error connecting to server. Please make sure the Python API is running.");
+                
+                // Load fallback data from localStorage if available
+                const savedUsers = localStorage.getItem('erisUserDatabase');
+                if (savedUsers) {
+                    try {
+                        setUserDatabase(JSON.parse(savedUsers));
+                    } catch (e) {
+                        console.error("Error parsing saved users:", e);
+                    }
+                }
+            } finally {
+                setLoading(false);
             }
         };
-        reader.readAsText(file);
-    };
+        
+        fetchData();
+    }, []);
 
     const handleLogin = (data) => {
         if (data.isEmployee) {
@@ -109,42 +99,92 @@ function App() {
     };
 
     const handleSignUp = (data) => {
-        // Add the new user to subscribers list
-        const updatedDb = {
-            ...userDatabase,
-            subscribers: [...userDatabase.subscribers, data]
-        };
-        
-        setUserDatabase(updatedDb);
-        saveUserDatabase(updatedDb);
-        
-        alert('Registration successful! Please login.');
-        setCurrentView('main');
+        // Send new user to API
+        fetch(`${API_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Update local state
+                const updatedDb = {
+                    ...userDatabase,
+                    subscribers: [...userDatabase.subscribers, data]
+                };
+                
+                setUserDatabase(updatedDb);
+                
+                // Also update localStorage as backup
+                localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
+                
+                alert('Registration successful! Please login.');
+                setCurrentView('main');
+            } else {
+                alert('Error registering user. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error registering user:', error);
+            
+            // Fallback to localStorage if API fails
+            const updatedDb = {
+                ...userDatabase,
+                subscribers: [...userDatabase.subscribers, data]
+            };
+            
+            setUserDatabase(updatedDb);
+            localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
+            
+            alert('Registration saved locally. Please login.');
+            setCurrentView('main');
+        });
     };
 
     const handleUpdateInfo = (data) => {
-        // Update user data in the appropriate list
-        let updatedDb;
+        const updatedUser = {...userData, ...data};
         
+        // Update local state first
         if (isEmployee) {
-            updatedDb = {
+            const updatedDb = {
                 ...userDatabase,
                 employees: userDatabase.employees.map(emp => 
-                    (emp.email === userData.email) ? {...emp, ...data} : emp
+                    (emp.email === userData.email) ? updatedUser : emp
                 )
             };
+            
+            setUserDatabase(updatedDb);
+            localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
         } else {
-            updatedDb = {
+            const updatedDb = {
                 ...userDatabase,
                 subscribers: userDatabase.subscribers.map(sub => 
-                    (sub.email === userData.email) ? {...sub, ...data} : sub
+                    (sub.email === userData.email) ? updatedUser : sub
                 )
             };
+            
+            setUserDatabase(updatedDb);
+            localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
         }
         
-        setUserDatabase(updatedDb);
-        setUserData(prevData => ({...prevData, ...data}));
-        localStorage.setItem('erisUserDatabase', JSON.stringify(updatedDb));
+        // Update user data
+        setUserData(updatedUser);
+        
+        // Then try to update the API
+        fetch(`${API_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedUser),
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error updating information:', error);
+        });
         
         alert('Information updated successfully!');
         setCurrentView('main');
@@ -156,7 +196,75 @@ function App() {
         setCurrentView('main');
     };
 
+    const handleTeamUpdate = (updatedTeam) => {
+        // Update local state first
+        const newTeams = [...teams];
+        const index = newTeams.findIndex(t => t.id === updatedTeam.id);
+        
+        if (index !== -1) {
+            newTeams[index] = updatedTeam;
+        } else {
+            newTeams.push(updatedTeam);
+        }
+        
+        setTeams(newTeams);
+        
+        // Try to update the API
+        fetch(`${API_URL}/teams`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedTeam),
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error updating team:', error);
+        });
+        
+        alert('Team updated successfully!');
+    };
+
+    const handleResponseUpdate = (updatedResponse) => {
+        // Update local state first
+        const newResponses = [...responses];
+        const index = newResponses.findIndex(r => r.id === updatedResponse.id);
+        
+        if (index !== -1) {
+            newResponses[index] = updatedResponse;
+        } else {
+            newResponses.push(updatedResponse);
+        }
+        
+        setResponses(newResponses);
+        
+        // Try to update the API
+        fetch(`${API_URL}/responses`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedResponse),
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error updating response:', error);
+        });
+        
+        alert('Response updated successfully!');
+    };
+
     const renderContent = () => {
+        if (loading) {
+            return (
+                <div className="loading-container">
+                    <h2 className="eris-logo">ERIS</h2>
+                    <p>Loading system data...</p>
+                    <div className="loading-spinner"></div>
+                </div>
+            );
+        }
+        
         switch(currentView) {
             case 'login':
                 return <Login onSubmit={handleLogin} onBack={() => setCurrentView('main')} />;
@@ -167,7 +275,24 @@ function App() {
             case 'updateInfo':
                 return <UpdateInfo userData={userData} onSubmit={handleUpdateInfo} onBack={() => setCurrentView('main')} />;
             case 'employeeDashboard':
-                return <EmployeeDashboard onBack={() => setCurrentView('main')} />;
+                return <EmployeeDashboard 
+                    onBack={() => setCurrentView('main')} 
+                    onTeamsClick={() => setCurrentView('teamManagement')}
+                    onResponsesClick={() => setCurrentView('responseTracking')}
+                />;
+            case 'teamManagement':
+                return <TeamManagement 
+                    teams={teams}
+                    onTeamUpdate={handleTeamUpdate}
+                    onBack={() => setCurrentView('employeeDashboard')} 
+                />;
+            case 'responseTracking':
+                return <ResponseTracking 
+                    responses={responses}
+                    teams={teams}
+                    onResponseUpdate={handleResponseUpdate}
+                    onBack={() => setCurrentView('employeeDashboard')} 
+                />;
             default:
                 return (
                     <div className="button-container">
@@ -183,18 +308,6 @@ function App() {
                                 <button className="gradient-button signup" onClick={() => setCurrentView('signup')}>
                                     SIGN UP
                                 </button>
-                                <div className="admin-controls">
-                                    <input
-                                        type="file"
-                                        id="import-database"
-                                        accept=".txt"
-                                        style={{ display: 'none' }}
-                                        onChange={importUserDatabase}
-                                    />
-                                    <label className="admin-link" htmlFor="import-database">
-                                        Import User Database
-                                    </label>
-                                </div>
                             </>
                         ) : isEmployee ? (
                             <>
