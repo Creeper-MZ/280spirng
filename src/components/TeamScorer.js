@@ -109,8 +109,10 @@ const SITUATION_REQUIREMENTS = {
     return scoredTeams.sort((a, b) => b.score.total - a.score.total);
   };
   
-  export default {
+  const TeamScorer = {
     scoreTeamForSituation,
     rankTeamsForSituation,
     SITUATION_REQUIREMENTS
   };
+  
+  export default TeamScorer;
