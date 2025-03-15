@@ -1,9 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import TeamFilter from './TeamFilter';
 
 const TeamManagement = ({ teams, onTeamUpdate, onBack }) => {
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [teamData, setTeamData] = useState({});
+    const [filter, setFilter] = useState('all');
+    const [filteredTeams, setFilteredTeams] = useState(teams);
+
+    // Apply filters when teams or filter changes
+    useEffect(() => {
+        if (filter === 'all') {
+            setFilteredTeams(teams);
+        } else {
+            setFilteredTeams(teams.filter(team => team.status === filter));
+        }
+    }, [teams, filter]);
 
     const handleSelectTeam = (team) => {
         setSelectedTeam(team);
@@ -99,8 +111,15 @@ const TeamManagement = ({ teams, onTeamUpdate, onBack }) => {
             <div className="team-management-content">
                 <div className="team-list">
                     <h3>Response Teams</h3>
+                    
+                    {/* Add Team Filter Component */}
+                    <TeamFilter 
+                        filter={filter} 
+                        onFilterChange={setFilter} 
+                    />
+                    
                     <div className="team-buttons">
-                        {teams.map(team => (
+                        {filteredTeams.map(team => (
                             <button 
                                 key={team.id}
                                 className={`team-button ${selectedTeam && selectedTeam.id === team.id ? 'selected' : ''}`}
@@ -199,6 +218,9 @@ const TeamManagement = ({ teams, onTeamUpdate, onBack }) => {
                                                 <option value="Basic Life Support">Basic Life Support</option>
                                                 <option value="Advanced Life Support">Advanced Life Support</option>
                                                 <option value="Critical Care">Critical Care</option>
+                                                <option value="Trauma Care">Trauma Care</option>
+                                                <option value="Pediatric Care">Pediatric Care</option>
+                                                <option value="Advanced Cardiac Life Support">Advanced Cardiac Life Support</option>
                                             </select>
                                         </div>
                                         

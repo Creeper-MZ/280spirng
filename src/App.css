@@ -613,3 +613,208 @@
     padding: 12px 20px;
   }
 }
+/* Availability Dashboard Styles */
+.availability-dashboard {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.dashboard-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.dashboard-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 15px;
+  min-width: 200px;
+}
+
+.dashboard-card h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: white;
+  font-size: 16px;
+  text-align: center;
+}
+
+.stat-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.stat-item {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 5px;
+}
+
+/* Team Filter Styles */
+.filter-container {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.filter-label {
+  display: block;
+  color: white;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.filter-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.filter-button.active {
+  background: rgba(75, 192, 192, 0.3);
+  font-weight: 500;
+}
+
+/* Team Recommendation Styles */
+.team-recommendation {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.recommendation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.recommendation-title {
+  color: white;
+  font-weight: 600;
+  margin: 0;
+}
+
+.situation-select {
+  min-width: 150px;
+}
+
+.recommended-teams {
+  margin-top: 10px;
+}
+
+.recommended-team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.team-score {
+  display: flex;
+  align-items: center;
+}
+
+.score-value {
+  font-weight: 700;
+  margin-right: 8px;
+}
+
+.score-bar {
+  height: 8px;
+  width: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+}
+
+.score-fill.medium {
+  background: linear-gradient(90deg, #FFC107, #FFEB3B);
+}
+
+.score-fill.low {
+  background: linear-gradient(90deg, #F44336, #FF9800);
+}
+
+.team-select-button {
+  padding: 4px 8px;
+  background: rgba(75, 192, 192, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.team-select-button:hover {
+  background: rgba(75, 192, 192, 0.4);
+}
+
+.team-qualifications {
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.team-requirement {
+  padding: 2px 6px;
+  margin-right: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.team-requirement.met {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.team-requirement.not-met {
+  background: rgba(244, 67, 54, 0.2);
+}

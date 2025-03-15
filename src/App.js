@@ -7,7 +7,10 @@ import UpdateInfo from './components/UpdateInfo';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import TeamManagement from './components/TeamManagement';
 import ResponseTracking from './components/ResponseTracking';
-
+import TeamFilter from './components/TeamFilter';
+import AvailabilityDashboard from './components/AvailabilityDashboard';
+import TeamRecommendation from './components/TeamRecommendation';
+import TeamScorer from './components/TeamScorer';
 // API base URL - change this to match your Python server
 const API_URL = '/api';
 
@@ -276,6 +279,8 @@ function App() {
                     onBack={() => setCurrentView('main')} 
                     onTeamsClick={() => setCurrentView('teamManagement')}
                     onResponsesClick={() => setCurrentView('responseTracking')}
+                    teams={teams}
+                    responses={responses}
                 />;
             case 'teamManagement':
                 return <TeamManagement 

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
+import TeamRecommendation from './TeamRecommendation';
 
 const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
     const [selectedResponse, setSelectedResponse] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [responseData, setResponseData] = useState({});
+    const [showRecommendation, setShowRecommendation] = useState(false);
 
     const handleSelectResponse = (response) => {
         setSelectedResponse(response);
         setResponseData(response);
         setEditMode(false);
+        // Hide recommendation when viewing an existing response
+        setShowRecommendation(false);
     };
 
     const handleStatusChange = (e) => {
@@ -35,6 +39,7 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
         setEditMode(false);
         // Update the selected response view as well
         setSelectedResponse(responseData);
+        setShowRecommendation(false);
     };
 
     const handleInputChange = (e) => {
@@ -81,6 +86,7 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
             id: `resp-${Date.now()}`,
             teamId: availableTeam ? availableTeam.id : teams[0]?.id || '',
             priority: 2,
+            situationType: 'moderate',
             status: 'dispatched',
             location: '',
             dispatchTime: new Date().toISOString(),
@@ -93,6 +99,21 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
         setSelectedResponse(newResponse);
         setResponseData(newResponse);
         setEditMode(true);
+        setShowRecommendation(true);
+    };
+
+    const handleTeamSelect = (teamId) => {
+        setResponseData({
+            ...responseData,
+            teamId
+        });
+    };
+
+    const handleSituationTypeChange = (e) => {
+        setResponseData({
+            ...responseData,
+            situationType: e.target.value
+        });
     };
 
     return (
@@ -177,6 +198,22 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
                                 </div>
                                 
                                 <div className="form-group">
+                                    <label>Situation Type:</label>
+                                    <select 
+                                        name="situationType" 
+                                        value={responseData.situationType || 'moderate'} 
+                                        onChange={handleSituationTypeChange}
+                                    >
+                                        <option value="minor">Minor (Basic care)</option>
+                                        <option value="moderate">Moderate (Standard care)</option>
+                                        <option value="severe">Severe (Critical care)</option>
+                                        <option value="trauma">Trauma (Accident/Injury)</option>
+                                        <option value="cardiac">Cardiac Emergency</option>
+                                        <option value="pediatric">Pediatric Case</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="form-group">
                                     <label>Status:</label>
                                     <select 
                                         name="status"
@@ -190,6 +227,15 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
                                     </select>
                                 </div>
                                 
+                                {/* Team Recommendation Component */}
+                                {showRecommendation && responseData.situationType && (
+                                    <TeamRecommendation 
+                                        teams={teams.filter(t => t.status === 'available')} 
+                                        situationType={responseData.situationType}
+                                        onTeamSelect={handleTeamSelect}
+                                    />
+                                )}
+                                
                                 <div className="form-group">
                                     <label>Team:</label>
                                     <select 
@@ -199,7 +245,7 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
                                     >
                                         {teams.map(team => (
                                             <option key={team.id} value={team.id}>
-                                                {team.name} (Grade {team.grade})
+                                                {team.name} (Grade {team.grade}) - {team.status}
                                             </option>
                                         ))}
                                     </select>
@@ -234,7 +280,10 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
                                 
                                 <div className="button-group">
                                     <button className="gradient-button" onClick={handleSaveResponse}>Save Changes</button>
-                                    <button className="gradient-button" onClick={() => setEditMode(false)}>Cancel</button>
+                                    <button className="gradient-button" onClick={() => {
+                                        setEditMode(false);
+                                        setShowRecommendation(false);
+                                    }}>Cancel</button>
                                 </div>
                             </div>
                         ) : (
@@ -260,6 +309,16 @@ const ResponseTracking = ({ responses, teams, onResponseUpdate, onBack }) => {
                                         }
                                     </p>
                                 </div>
+                                
+                                {selectedResponse.situationType && (
+                                    <div className="info-group">
+                                        <label>Situation Type:</label>
+                                        <p>
+                                            {selectedResponse.situationType.charAt(0).toUpperCase() + 
+                                              selectedResponse.situationType.slice(1)}
+                                        </p>
+                                    </div>
+                                )}
                                 
                                 <div className="info-group">
                                     <label>Status:</label>

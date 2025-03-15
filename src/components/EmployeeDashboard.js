@@ -1,9 +1,20 @@
 import React from 'react';
+import AvailabilityDashboard from './AvailabilityDashboard';
 
-const EmployeeDashboard = ({ onBack, onTeamsClick, onResponsesClick }) => {
+const EmployeeDashboard = ({ 
+  onBack, 
+  onTeamsClick, 
+  onResponsesClick,
+  teams = [],
+  responses = [] 
+}) => {
     return (
         <div className="form-container employee-dashboard">
             <h2>Employee Dashboard</h2>
+            
+            {/* Add Availability Dashboard */}
+            <AvailabilityDashboard teams={teams} responses={responses} />
+            
             <div className="dashboard-options">
                 <div className="dashboard-section">
                     <h3>Team Management</h3>
