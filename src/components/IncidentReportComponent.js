@@ -9,20 +9,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedResponse, setSelectedResponse] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  const [reportData, setReportData] = useState({
-    id: '',
-    responseId: '',
-    title: '',
-    date: '',
-    emtName: '',
-    patientName: '',
-    patientCondition: '',
-    procedures: '',
-    medications: '',
-    vitalSigns: '',
-    transportDetails: '',
-    notes: ''
-  });
+  const [reportData, setReportData] = useState({});
   const [loading, setLoading] = useState(true);
 
   // Fetch reports data from API
@@ -40,47 +27,202 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         setReports(data.reports || []);
       } else {
         // If API fails, use mock data for demonstration
-        const mockReports = generateMockReports();
+        const mockReports = generateReportsFromResponses(responses);
         setReports(mockReports);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
       // Use mock data if API fails
-      const mockReports = generateMockReports();
+      const mockReports = generateReportsFromResponses(responses);
       setReports(mockReports);
     } finally {
       setLoading(false);
     }
   };
 
-  // Generate mock reports data for demonstration
-  const generateMockReports = () => {
-    const mockData = [];
+  // Automatically generate reports from response data
+  const generateReportsFromResponses = (responseData) => {
+    const generatedReports = [];
     
-    // Create sample reports for each response
-    responses.forEach(response => {
+    responseData.forEach(response => {
       // Only create reports for completed responses
       if (response.status === 'completed') {
         const reportDate = response.completionTime || new Date().toISOString();
         
-        mockData.push({
+        // Auto-generate report content based on response data
+        generatedReports.push({
           id: `report-${response.id}`,
           responseId: response.id,
           title: `Incident Report: ${response.location || 'Unknown Location'}`,
           date: reportDate,
-          emtName: 'John Medic', // Placeholder
+          emtName: getEMTNames(response.teamId),
           patientName: response.patient?.name || 'Unknown',
-          patientCondition: response.patient?.condition || 'Stable',
-          procedures: 'Initial assessment and stabilization',
-          medications: 'None administered',
-          vitalSigns: 'Heart Rate: 75 bpm, BP: 120/80',
-          transportDetails: 'Transported to General Hospital',
+          patientCondition: generatePatientCondition(response),
+          procedures: generateProcedures(response),
+          medications: generateMedications(response),
+          vitalSigns: generateVitalSigns(response),
+          transportDetails: generateTransportDetails(response),
           notes: `Priority ${response.priority} incident. ${response.notes || ''}`
         });
       }
     });
     
-    return mockData;
+    return generatedReports;
+  };
+
+  // Generate patient condition based on response priority and data
+  const generatePatientCondition = (response) => {
+    const conditions = [
+      'Patient is conscious and stable.',
+      'Patient is responsive with mild distress.',
+      'Patient showing signs of moderate distress.',
+      'Patient in serious condition requiring immediate attention.',
+      'Patient in critical condition with unstable vital signs.'
+    ];
+    
+    // Select condition based on priority
+    const conditionIndex = Math.min(response.priority, conditions.length - 1);
+    let baseCondition = conditions[conditionIndex];
+    
+    // Add custom data if available
+    if (response.patient?.condition) {
+      baseCondition += ` ${response.patient.condition}`;
+    }
+    
+    return baseCondition;
+  };
+
+  // Generate procedures based on response data
+  const generateProcedures = (response) => {
+    const baseProcedures = [
+      'Initial assessment performed.',
+      'Vital signs monitored.',
+      'Airway maintained.'
+    ];
+    
+    // Add priority-specific procedures
+    if (response.priority >= 2) {
+      baseProcedures.push('Oxygen administered.');
+      baseProcedures.push('IV access established.');
+    }
+    
+    if (response.priority >= 3) {
+      baseProcedures.push('Advanced cardiac monitoring implemented.');
+      baseProcedures.push('Emergency stabilization procedures performed.');
+    }
+    
+    if (response.priority === 4) {
+      baseProcedures.push('Advanced life support protocols followed.');
+      baseProcedures.push('Critical care interventions implemented.');
+    }
+    
+    return baseProcedures.join('\n');
+  };
+
+  // Generate medications based on response data
+  const generateMedications = (response) => {
+    if (response.priority === 1) {
+      return 'No medications administered.';
+    }
+    
+    const possibleMeds = [
+      'Oxygen therapy via nasal cannula.',
+      'IV fluids for hydration.',
+      'Pain management medication administered.'
+    ];
+    
+    if (response.priority >= 3) {
+      possibleMeds.push('Emergency cardiac medications on standby.');
+      possibleMeds.push('Advanced pain management protocol followed.');
+    }
+    
+    return possibleMeds.join('\n');
+  };
+
+  // Generate vital signs based on priority
+  const generateVitalSigns = (response) => {
+    // Generate realistic vital signs based on priority
+    const heartRates = [
+      '70-80 bpm',  // Normal
+      '85-95 bpm',  // Slightly elevated
+      '100-120 bpm', // Elevated
+      '>120 bpm'     // High
+    ];
+    
+    const bloodPressures = [
+      '120/80 mmHg',  // Normal
+      '130/85 mmHg',  // Slightly elevated
+      '150/90 mmHg',  // Elevated
+      'Unstable BP'   // Critical
+    ];
+    
+    const respirations = [
+      '14-18/min',  // Normal
+      '18-22/min',  // Slightly elevated
+      '22-28/min',  // Elevated
+      '>30/min or <10/min'  // Critical
+    ];
+    
+    const index = Math.min(response.priority - 1, 3);
+    
+    return `Heart Rate: ${heartRates[index]}\nBlood Pressure: ${bloodPressures[index]}\nRespirations: ${respirations[index]}\nSpO2: ${98 - (index * 2)}%`;
+  };
+
+  // Generate transport details
+  const generateTransportDetails = (response) => {
+    const hospitals = [
+      'City General Hospital',
+      'Memorial Medical Center',
+      'University Hospital',
+      'St. Mary\'s Medical Center',
+      'Regional Trauma Center'
+    ];
+    
+    const randomHospital = hospitals[Math.floor(Math.random() * hospitals.length)];
+    
+    if (response.priority >= 3) {
+      return `Emergency transport to ${randomHospital} with continuous monitoring. Trauma team alerted prior to arrival.`;
+    } else {
+      return `Transported to ${randomHospital} for further evaluation and treatment.`;
+    }
+  };
+
+  // Get EMT names based on team ID
+  const getEMTNames = (teamId) => {
+    // This would typically fetch from team data
+    // For now, return a placeholder
+    return 'Response Team Personnel';
+  };
+
+  // Generate a new report from a response
+  const generateReportFromResponse = (responseId) => {
+    const response = responses.find(r => r.id === responseId);
+    if (!response) return null;
+    
+    const existingReport = reports.find(r => r.responseId === responseId);
+    if (existingReport) {
+      return existingReport;
+    }
+    
+    // Auto-generate new report
+    const reportDate = response.completionTime || new Date().toISOString();
+    
+    const newReport = {
+      id: `report-${Date.now()}`,
+      responseId: response.id,
+      title: `Incident Report: ${response.location || 'Unknown Location'}`,
+      date: reportDate,
+      emtName: getEMTNames(response.teamId),
+      patientName: response.patient?.name || 'Unknown',
+      patientCondition: generatePatientCondition(response),
+      procedures: generateProcedures(response),
+      medications: generateMedications(response),
+      vitalSigns: generateVitalSigns(response),
+      transportDetails: generateTransportDetails(response),
+      notes: `Priority ${response.priority} incident. ${response.notes || ''}`
+    };
+    
+    return newReport;
   };
 
   // Handle selecting a report to view/edit
@@ -98,97 +240,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
     }
   };
 
-  // Auto-generate report based on selected response
-  const generateReportFromResponse = (response) => {
-    if (!response) return null;
-    
-    // Determine appropriate procedures based on priority
-    let procedures = '';
-    let medications = '';
-    let vitalSigns = '';
-    
-    switch(response.priority) {
-      case 1:
-        procedures = 'Basic assessment; Wound cleaning and dressing; Vital signs monitoring.';
-        medications = 'Basic pain relief medication administered.';
-        vitalSigns = 'Heart Rate: 72 bpm, BP: 120/80, O2 Sat: 98%';
-        break;
-      case 2:
-        procedures = 'Advanced assessment; IV access established; Wound care; Vital signs monitoring.';
-        medications = 'IV fluids; Pain management medication; Antibiotic prophylaxis.';
-        vitalSigns = 'Heart Rate: 88 bpm, BP: 130/85, O2 Sat: 96%, Resp: 18';
-        break;
-      case 3:
-        procedures = 'Advanced trauma assessment; Multiple IV access; Airway management; Bleeding control; Splinting.';
-        medications = 'IV fluids; Analgesics; Anxiolytics; Vasoactive medications.';
-        vitalSigns = 'Heart Rate: 105 bpm, BP: 95/60, O2 Sat: 94%, Resp: 22, GCS: 13';
-        break;
-      case 4:
-        procedures = 'Critical care protocols; Advanced airway management; Multiple IV/IO access; Chest decompression; Hemorrhage control; Hypothermia prevention.';
-        medications = 'IV fluid bolus; Blood products; Vasoactive medications; RSI medications; Antiarrhythmics.';
-        vitalSigns = 'Heart Rate: 130 bpm, BP: 80/50, O2 Sat: 88%, Resp: 28, GCS: 9';
-        break;
-      default:
-        procedures = 'Standard assessment and care provided.';
-        medications = 'Standard medications administered as per protocol.';
-        vitalSigns = 'Vital signs within normal limits.';
-    }
-    
-    // Generate situational notes based on situation type
-    let situationNotes = '';
-    if (response.situationType) {
-      switch(response.situationType) {
-        case 'minor':
-          situationNotes = 'Minor incident requiring basic treatment. Patient stable throughout.';
-          break;
-        case 'moderate':
-          situationNotes = 'Moderate severity incident requiring standard care protocols. Patient responded well to treatment.';
-          break;
-        case 'severe':
-          situationNotes = 'Severe incident requiring advanced protocols. Patient condition stabilized during transport.';
-          break;
-        case 'trauma':
-          situationNotes = 'Trauma incident with multiple injuries. Appropriate interventions performed per trauma protocols.';
-          break;
-        case 'cardiac':
-          situationNotes = 'Cardiac emergency protocols implemented. Continuous cardiac monitoring during transport.';
-          break;
-        case 'pediatric':
-          situationNotes = 'Pediatric protocols followed. Age-appropriate assessment and interventions performed.';
-          break;
-        default:
-          situationNotes = 'Standard protocols followed based on patient presentation.';
-      }
-    }
-    
-    // Generate transport details based on priority
-    let transportDetails = '';
-    if (response.priority >= 3) {
-      transportDetails = 'Emergency transport to nearest trauma center with pre-notification to receiving facility.';
-    } else if (response.priority === 2) {
-      transportDetails = 'Priority transport to appropriate medical facility with report called ahead.';
-    } else {
-      transportDetails = 'Routine transport to local emergency department.';
-    }
-    
-    // Create the generated report
-    return {
-      id: `report-${Date.now()}`,
-      responseId: response.id,
-      title: `Incident Report: ${response.location || 'Unknown Location'}`,
-      date: new Date().toISOString(),
-      emtName: '', // To be filled by the operator
-      patientName: response.patient?.name || '',
-      patientCondition: response.patient?.condition || '',
-      procedures: procedures,
-      medications: medications,
-      vitalSigns: vitalSigns,
-      transportDetails: transportDetails,
-      notes: `Priority ${response.priority} incident. ${situationNotes} ${response.notes || ''}`
-    };
-  };
-
-  // Handle selecting a response to create a new report
+  // Handle selecting a response to generate a report
   const handleSelectResponse = (responseId) => {
     const response = responses.find(r => r.id === responseId);
     if (response) {
@@ -202,17 +254,20 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         setReportData(existingReport);
         setEditMode(false);
       } else {
-        // Auto-generate a new report based on response data
-        const generatedReport = generateReportFromResponse(response);
+        // Generate new report automatically
+        const newReport = generateReportFromResponse(responseId);
         
         setSelectedReport(null);
-        setReportData(generatedReport);
-        setEditMode(true);
+        setReportData(newReport);
+        setEditMode(false);
+        
+        // Save the newly generated report
+        handleSaveReport(newReport);
       }
     }
   };
 
-  // Handle report form changes
+  // Handle report form changes if editing is enabled
   const handleInputChange = (e) => {
     setReportData({
       ...reportData,
@@ -220,19 +275,11 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
     });
   };
 
-  // Generate a new report using AI-like analysis of the response data
-  const handleAutoGenerateReport = () => {
-    if (!selectedResponse) return;
-    
-    const generatedReport = generateReportFromResponse(selectedResponse);
-    setReportData(generatedReport);
-  };
-
   // Save report to API and state
-  const handleSaveReport = async () => {
+  const handleSaveReport = async (reportToSave = null) => {
     try {
-      // Prepare report data with current date if it's a new report
-      const updatedReport = {
+      // Use provided report or current state
+      const updatedReport = reportToSave || {
         ...reportData,
         date: reportData.date || new Date().toISOString()
       };
@@ -260,7 +307,10 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         
         setSelectedReport(updatedReport);
         setEditMode(false);
-        alert('Report saved successfully!');
+        
+        if (!reportToSave) {
+          alert('Report saved successfully!');
+        }
       } else {
         // Even if API fails, update UI for demonstration
         const existingIndex = reports.findIndex(r => r.id === updatedReport.id);
@@ -274,13 +324,16 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         setSelectedReport(updatedReport);
         setEditMode(false);
         console.warn('Could not save to API, but updated local state');
-        alert('Report saved locally!');
+        
+        if (!reportToSave) {
+          alert('Report saved locally!');
+        }
       }
     } catch (error) {
       console.error('Error saving report:', error);
       
       // Update UI for demonstration even if API fails
-      const updatedReport = {
+      const updatedReport = reportToSave || {
         ...reportData,
         date: reportData.date || new Date().toISOString()
       };
@@ -295,31 +348,29 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       
       setSelectedReport(updatedReport);
       setEditMode(false);
-      alert('Report saved locally!');
+      
+      if (!reportToSave) {
+        alert('Report saved locally!');
+      }
     }
   };
 
-  // Create a new blank report
-  const createNewReport = () => {
-    const newReport = {
-      id: `report-${Date.now()}`,
-      responseId: '',
-      title: 'New Report',
-      date: new Date().toISOString(),
-      emtName: '',
-      patientName: '',
-      patientCondition: '',
-      procedures: '',
-      medications: '',
-      vitalSigns: '',
-      transportDetails: '',
-      notes: ''
-    };
+  // Generate reports for all completed responses
+  const generateAllReports = () => {
+    const completedResponses = responses.filter(r => r.status === 'completed');
     
-    setSelectedReport(null);
-    setSelectedResponse(null);
-    setReportData(newReport);
-    setEditMode(true);
+    completedResponses.forEach(response => {
+      // Check if report already exists
+      const existingReport = reports.find(r => r.responseId === response.id);
+      if (!existingReport) {
+        const newReport = generateReportFromResponse(response.id);
+        if (newReport) {
+          handleSaveReport(newReport);
+        }
+      }
+    });
+    
+    alert('Generated reports for all completed responses!');
   };
 
   // Format date for display
@@ -360,7 +411,10 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
           <h3>Available Reports</h3>
           
           <div className="filter-container">
-            <span className="filter-label">Existing Reports</span>
+            <span className="filter-label">Generated Reports</span>
+            <button className="gradient-button" onClick={generateAllReports}>
+              Generate All Reports
+            </button>
           </div>
           
           <div className="team-buttons">
@@ -379,14 +433,10 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
                 </div>
               </button>
             ))}
-            
-            <button className="team-button new-team" onClick={createNewReport}>
-              + Create New Report
-            </button>
           </div>
           
           <div className="filter-container" style={{ marginTop: '20px' }}>
-            <span className="filter-label">Create Report for Response</span>
+            <span className="filter-label">Generate Report for Response</span>
           </div>
           
           <div className="team-buttons">
@@ -418,134 +468,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         <div className="team-details">
           <h3>Report Details</h3>
           
-          {editMode ? (
-            // Edit form
-            <div className="team-edit-form">
-              {selectedResponse && (
-                <div className="button-group" style={{ marginBottom: '15px' }}>
-                  <button 
-                    className="gradient-button view" 
-                    onClick={handleAutoGenerateReport}
-                  >
-                    Auto-Generate Report Content
-                  </button>
-                </div>
-              )}
-              
-              <div className="form-group">
-                <label>Report Title:</label>
-                <input 
-                  type="text" 
-                  name="title" 
-                  value={reportData.title} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>EMT Name:</label>
-                <input 
-                  type="text" 
-                  name="emtName" 
-                  value={reportData.emtName} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Date:</label>
-                <input 
-                  type="datetime-local" 
-                  name="date" 
-                  value={reportData.date ? new Date(reportData.date).toISOString().slice(0, 16) : ''} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Patient Name:</label>
-                <input 
-                  type="text" 
-                  name="patientName" 
-                  value={reportData.patientName} 
-                  onChange={handleInputChange} 
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Patient Condition:</label>
-                <textarea 
-                  name="patientCondition" 
-                  value={reportData.patientCondition} 
-                  onChange={handleInputChange} 
-                  rows="2"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Procedures Performed:</label>
-                <textarea 
-                  name="procedures" 
-                  value={reportData.procedures} 
-                  onChange={handleInputChange} 
-                  rows="3"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Medications Administered:</label>
-                <textarea 
-                  name="medications" 
-                  value={reportData.medications} 
-                  onChange={handleInputChange} 
-                  rows="2"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Vital Signs:</label>
-                <textarea 
-                  name="vitalSigns" 
-                  value={reportData.vitalSigns} 
-                  onChange={handleInputChange} 
-                  rows="2"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Transport Details:</label>
-                <textarea 
-                  name="transportDetails" 
-                  value={reportData.transportDetails} 
-                  onChange={handleInputChange} 
-                  rows="2"
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Additional Notes:</label>
-                <textarea 
-                  name="notes" 
-                  value={reportData.notes} 
-                  onChange={handleInputChange} 
-                  rows="3"
-                />
-              </div>
-              
-              <div className="button-group">
-                <button className="gradient-button" onClick={handleSaveReport}>Save Report</button>
-                <button className="gradient-button" onClick={() => {
-                  if (selectedReport) {
-                    setEditMode(false);
-                  } else {
-                    setSelectedReport(null);
-                    setSelectedResponse(null);
-                    setReportData({});
-                  }
-                }}>Cancel</button>
-              </div>
-            </div>
-          ) : selectedReport ? (
+          {selectedReport ? (
             // View mode
             <div className="team-info">
               <div className="info-group">
@@ -584,17 +507,17 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
               
               <div className="info-group">
                 <label>Procedures Performed:</label>
-                <p>{selectedReport.procedures || 'None recorded'}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{selectedReport.procedures || 'None recorded'}</p>
               </div>
               
               <div className="info-group">
                 <label>Medications Administered:</label>
-                <p>{selectedReport.medications || 'None administered'}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{selectedReport.medications || 'None administered'}</p>
               </div>
               
               <div className="info-group">
                 <label>Vital Signs:</label>
-                <p>{selectedReport.vitalSigns || 'Not recorded'}</p>
+                <p style={{ whiteSpace: 'pre-line' }}>{selectedReport.vitalSigns || 'Not recorded'}</p>
               </div>
               
               <div className="info-group">
@@ -610,14 +533,21 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
               )}
               
               <div className="button-group">
-                <button className="gradient-button" onClick={() => setEditMode(true)}>Edit Report</button>
+                <button className="gradient-button" onClick={() => {
+                  // Generate a fresh report for this response
+                  const freshReport = generateReportFromResponse(selectedReport.responseId);
+                  if (freshReport) {
+                    freshReport.id = selectedReport.id; // Keep same ID
+                    handleSaveReport(freshReport);
+                  }
+                }}>Regenerate Report</button>
               </div>
             </div>
           ) : (
             // No report selected
             <div className="info-display" style={{ textAlign: 'center' }}>
-              <p>Select a report from the list to view details or click "Create New Report" to create a new one.</p>
-              <p>You can also create a report for a completed emergency response by selecting from the list below.</p>
+              <p>Select a report from the list to view details or click "Generate All Reports" to create reports for all completed responses.</p>
+              <p>You can also generate a report for a specific completed emergency response by selecting from the list below.</p>
             </div>
           )}
         </div>
