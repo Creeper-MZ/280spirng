@@ -128,9 +128,34 @@ def initialize_data_files():
         })
 
     # Initialize reports data
-    if not os.path.exists(REPORTS_FILE):
-        write_data_file(REPORTS_FILE, {
-            "reports": []
+    if not os.path.exists(RESPONSES_FILE):
+        write_data_file(RESPONSES_FILE, {
+            "responses": [
+                {
+                    "id": "resp-1",
+                    "teamId": "team-1",
+                    "priority": 2,
+                    "status": "on-scene",
+                    "location": "123 Main St",
+                    "dispatchTime": "2023-11-01T10:30:00",
+                    "arrivalTime": "2023-11-01T10:45:00"
+                },
+                {
+                    "id": "resp-2",
+                    "teamId": "team-2",
+                    "priority": 3,
+                    "status": "completed",
+                    "location": "456 Oak Avenue",
+                    "dispatchTime": "2023-11-01T09:15:00",
+                    "arrivalTime": "2023-11-01T09:30:00",
+                    "completionTime": "2023-11-01T10:45:00",
+                    "patient": {
+                        "name": "Jane Smith",
+                        "condition": "Stable after treatment"
+                    },
+                    "notes": "Patient transported to City Hospital."
+                }
+            ]
         })
     # 初始化用户数据
     if not os.path.exists(USERS_FILE):

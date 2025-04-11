@@ -359,6 +359,11 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
   const generateAllReports = () => {
     const completedResponses = responses.filter(r => r.status === 'completed');
     
+    if (completedResponses.length === 0) {
+      alert('No completed responses found. Please complete at least one response before generating reports.');
+      return;
+    }
+    
     completedResponses.forEach(response => {
       // Check if report already exists
       const existingReport = reports.find(r => r.responseId === response.id);
