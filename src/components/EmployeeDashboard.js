@@ -5,6 +5,8 @@ const EmployeeDashboard = ({
   onBack, 
   onTeamsClick, 
   onResponsesClick,
+  onWorkHoursClick,
+  onReportsClick,
   teams = [],
   responses = [] 
 }) => {
@@ -27,14 +29,14 @@ const EmployeeDashboard = ({
                     <h3>Response Tracking</h3>
                     <button className="dashboard-button" onClick={onResponsesClick}>Track Active Responses</button>
                     <button className="dashboard-button" onClick={onResponsesClick}>View Call History</button>
-                    <button className="dashboard-button" onClick={onResponsesClick}>Create Incident Report</button>
+                    <button className="dashboard-button" onClick={onReportsClick}>Create Incident Report</button>
                 </div>
             </div>
             
             <div className="dashboard-section" style={{ marginTop: '20px' }}>
                 <h3>EMT Management</h3>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    <button className="dashboard-button" style={{ flex: '1' }} onClick={onTeamsClick}>View EMT Work Hours</button>
+                    <button className="dashboard-button" style={{ flex: '1' }} onClick={onWorkHoursClick}>View EMT Work Hours</button>
                     <button className="dashboard-button" style={{ flex: '1' }} onClick={onResponsesClick}>Track Response Times</button>
                     <button className="dashboard-button" style={{ flex: '1' }} onClick={onTeamsClick}>Manage EMT Records</button>
                 </div>

@@ -7,6 +7,8 @@ import UpdateInfo from './components/UpdateInfo';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import TeamManagement from './components/TeamManagement';
 import ResponseTracking from './components/ResponseTracking';
+import EMTWorkHoursTracking from './components/EMTWorkHoursTracking';
+import IncidentReportComponent from './components/IncidentReportComponent';
 // API base URL - change this to match your Python server
 const API_URL = '/api';
 
@@ -22,12 +24,21 @@ function App() {
     const [teams, setTeams] = useState([]);
     const [responses, setResponses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [workHours, setWorkHours] = useState([]);
+    const [reports, setReports] = useState([]);
 
     // 初始化时从API加载数据
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
+                const reportsResponse = await fetch(`${API_URL}/reports`);
+                const reportsData = await reportsResponse.json();
+                setReports(reportsData.reports || []);
+
+                const workHoursResponse = await fetch(`${API_URL}/work-hours`);
+                const workHoursData = await workHoursResponse.json();
+                setWorkHours(workHoursData.workHours || []);
                 // 请求用户数据
                 const usersResponse = await fetch(`${API_URL}/users`);
                 const usersData = await usersResponse.json();
@@ -272,11 +283,13 @@ function App() {
                 return <UpdateInfo userData={userData} onSubmit={handleUpdateInfo} onBack={() => setCurrentView('main')} />;
             case 'employeeDashboard':
                 return <EmployeeDashboard 
-                    onBack={() => setCurrentView('main')} 
-                    onTeamsClick={() => setCurrentView('teamManagement')}
-                    onResponsesClick={() => setCurrentView('responseTracking')}
-                    teams={teams}
-                    responses={responses}
+                onBack={() => setCurrentView('main')} 
+                onTeamsClick={() => setCurrentView('teamManagement')}
+                onResponsesClick={() => setCurrentView('responseTracking')}
+                onWorkHoursClick={() => setCurrentView('emtWorkHours')}
+                onReportsClick={() => setCurrentView('incidentReports')}
+                teams={teams}
+                responses={responses}
                 />;
             case 'teamManagement':
                 return <TeamManagement 
@@ -291,6 +304,19 @@ function App() {
                     onResponseUpdate={handleResponseUpdate}
                     onBack={() => setCurrentView('employeeDashboard')} 
                 />;
+            case 'emtWorkHours':
+                return <EMTWorkHoursTracking 
+                    teams={teams}
+                    workHours={workHours}
+                    onBack={() => setCurrentView('employeeDashboard')}
+                />;
+                
+            case 'incidentReports':
+                return <IncidentReportComponent 
+                    responses={responses}
+                    reports={reports}
+                    onBack={() => setCurrentView('employeeDashboard')}
+                />;    
             default:
                 return (
                     <div className="button-container">
