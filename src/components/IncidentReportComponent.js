@@ -11,11 +11,12 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
   const [editMode, setEditMode] = useState(false);
   const [reportData, setReportData] = useState({});
   const [loading, setLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Added to force re-fetch
 
   // Fetch reports data from API
   useEffect(() => {
     fetchReports();
-  }, []);
+  }, [refreshTrigger]); // Added dependency to trigger refresh
 
   const fetchReports = async () => {
     setLoading(true);
@@ -24,16 +25,20 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       
       if (response.ok) {
         const data = await response.json();
+        console.log("Fetched reports:", data.reports || []);
         setReports(data.reports || []);
       } else {
+        console.warn("Failed to fetch reports, using mock data");
         // If API fails, use mock data for demonstration
         const mockReports = generateReportsFromResponses(responses);
+        console.log("Generated mock reports:", mockReports);
         setReports(mockReports);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
       // Use mock data if API fails
       const mockReports = generateReportsFromResponses(responses);
+      console.log("Generated mock reports after error:", mockReports);
       setReports(mockReports);
     } finally {
       setLoading(false);
@@ -42,6 +47,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
 
   // Automatically generate reports from response data
   const generateReportsFromResponses = (responseData) => {
+    console.log("Generating reports from responses:", responseData);
     const generatedReports = [];
     
     responseData.forEach(response => {
@@ -67,6 +73,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       }
     });
     
+    console.log("Generated reports:", generatedReports);
     return generatedReports;
   };
 
@@ -196,11 +203,16 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
 
   // Generate a new report from a response
   const generateReportFromResponse = (responseId) => {
+    console.log("Generating report for response ID:", responseId);
     const response = responses.find(r => r.id === responseId);
-    if (!response) return null;
+    if (!response) {
+      console.warn("No response found with ID:", responseId);
+      return null;
+    }
     
     const existingReport = reports.find(r => r.responseId === responseId);
     if (existingReport) {
+      console.log("Report already exists for this response:", existingReport);
       return existingReport;
     }
     
@@ -222,11 +234,13 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       notes: `Priority ${response.priority} incident. ${response.notes || ''}`
     };
     
+    console.log("Generated new report:", newReport);
     return newReport;
   };
 
   // Handle selecting a report to view/edit
   const handleSelectReport = (reportId) => {
+    console.log("Selecting report:", reportId);
     const report = reports.find(r => r.id === reportId);
     if (report) {
       setSelectedReport(report);
@@ -242,6 +256,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
 
   // Handle selecting a response to generate a report
   const handleSelectResponse = (responseId) => {
+    console.log("Selecting response:", responseId);
     const response = responses.find(r => r.id === responseId);
     if (response) {
       setSelectedResponse(response);
@@ -250,6 +265,7 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       const existingReport = reports.find(r => r.responseId === responseId);
       
       if (existingReport) {
+        console.log("Using existing report for response:", existingReport);
         setSelectedReport(existingReport);
         setReportData(existingReport);
         setEditMode(false);
@@ -257,12 +273,14 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         // Generate new report automatically
         const newReport = generateReportFromResponse(responseId);
         
-        setSelectedReport(null);
-        setReportData(newReport);
-        setEditMode(false);
-        
-        // Save the newly generated report
-        handleSaveReport(newReport);
+        if (newReport) {
+          setSelectedReport(null);
+          setReportData(newReport);
+          setEditMode(false);
+          
+          // Save the newly generated report
+          handleSaveReport(newReport);
+        }
       }
     }
   };
@@ -284,6 +302,8 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         date: reportData.date || new Date().toISOString()
       };
       
+      console.log("Saving report:", updatedReport);
+      
       // Send to API
       const response = await fetch('/api/reports', {
         method: 'POST',
@@ -296,31 +316,39 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       if (response.ok) {
         // Update state with saved report
         const existingIndex = reports.findIndex(r => r.id === updatedReport.id);
+        let newReports = [...reports];
         
         if (existingIndex >= 0) {
           // Update existing report
-          setReports(reports.map(r => r.id === updatedReport.id ? updatedReport : r));
+          newReports[existingIndex] = updatedReport;
         } else {
           // Add new report
-          setReports([...reports, updatedReport]);
+          newReports.push(updatedReport);
         }
         
+        setReports(newReports);
         setSelectedReport(updatedReport);
         setEditMode(false);
         
         if (!reportToSave) {
           alert('Report saved successfully!');
         }
+        console.log("Report saved successfully:", updatedReport);
+        
+        // Trigger refresh to ensure UI updates
+        setRefreshTrigger(prev => prev + 1);
       } else {
         // Even if API fails, update UI for demonstration
         const existingIndex = reports.findIndex(r => r.id === updatedReport.id);
+        let newReports = [...reports];
         
         if (existingIndex >= 0) {
-          setReports(reports.map(r => r.id === updatedReport.id ? updatedReport : r));
+          newReports[existingIndex] = updatedReport;
         } else {
-          setReports([...reports, updatedReport]);
+          newReports.push(updatedReport);
         }
         
+        setReports(newReports);
         setSelectedReport(updatedReport);
         setEditMode(false);
         console.warn('Could not save to API, but updated local state');
@@ -339,30 +367,39 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
       };
       
       const existingIndex = reports.findIndex(r => r.id === updatedReport.id);
+      let newReports = [...reports];
       
       if (existingIndex >= 0) {
-        setReports(reports.map(r => r.id === updatedReport.id ? updatedReport : r));
+        newReports[existingIndex] = updatedReport;
       } else {
-        setReports([...reports, updatedReport]);
+        newReports.push(updatedReport);
       }
       
+      setReports(newReports);
       setSelectedReport(updatedReport);
       setEditMode(false);
       
       if (!reportToSave) {
-        alert('Report saved locally!');
+        alert('Report saved locally due to server error!');
       }
     }
   };
 
   // Generate reports for all completed responses
   const generateAllReports = () => {
+    console.log("Generating all reports for completed responses");
     const completedResponses = responses.filter(r => r.status === 'completed');
+    console.log("Found completed responses:", completedResponses);
     
     if (completedResponses.length === 0) {
-      alert('No completed responses found. Please complete at least one response before generating reports.');
+      alert('No completed responses found. To create reports, change at least one response status to "completed".');
       return;
     }
+    
+    // Clear existing reports first (optional) to avoid duplicates
+    // setReports([]);
+    
+    let newReportsCount = 0;
     
     completedResponses.forEach(response => {
       // Check if report already exists
@@ -371,11 +408,16 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
         const newReport = generateReportFromResponse(response.id);
         if (newReport) {
           handleSaveReport(newReport);
+          newReportsCount++;
         }
       }
     });
     
-    alert('Generated reports for all completed responses!');
+    if (newReportsCount > 0) {
+      alert(`Generated ${newReportsCount} new reports for completed responses!`);
+    } else if (completedResponses.length > 0) {
+      alert('All completed responses already have reports generated.');
+    }
   };
 
   // Format date for display
@@ -423,21 +465,27 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
           </div>
           
           <div className="team-buttons">
-            {reports.map(report => (
-              <button 
-                key={report.id}
-                className={`team-button ${selectedReport && selectedReport.id === report.id ? 'selected' : ''}`}
-                onClick={() => handleSelectReport(report.id)}
-              >
-                <div>{report.title}</div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                  {formatDate(report.date)}
-                </div>
-                <div style={{ fontSize: '11px', marginTop: '3px' }}>
-                  {getResponseInfo(report.responseId)}
-                </div>
-              </button>
-            ))}
+            {reports.length > 0 ? (
+              reports.map(report => (
+                <button 
+                  key={report.id}
+                  className={`team-button ${selectedReport && selectedReport.id === report.id ? 'selected' : ''}`}
+                  onClick={() => handleSelectReport(report.id)}
+                >
+                  <div>{report.title}</div>
+                  <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                    {formatDate(report.date)}
+                  </div>
+                  <div style={{ fontSize: '11px', marginTop: '3px' }}>
+                    {getResponseInfo(report.responseId)}
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div style={{ color: 'white', padding: '10px', textAlign: 'center' }}>
+                No reports available. Generate reports using the button above.
+              </div>
+            )}
           </div>
           
           <div className="filter-container" style={{ marginTop: '20px' }}>
@@ -467,6 +515,11 @@ const IncidentReportComponent = ({ onBack, responses = [] }) => {
                   </button>
                 );
               })}
+            {responses.filter(response => response.status === 'completed').length === 0 && (
+              <div style={{ color: 'white', padding: '10px', textAlign: 'center' }}>
+                No completed responses available. Change a response status to "completed" first.
+              </div>
+            )}
           </div>
         </div>
         
