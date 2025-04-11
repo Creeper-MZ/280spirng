@@ -210,11 +210,11 @@ def initialize_data_files():
                 }
             ]
         })
-@app.route('/api/work-hours', methods=['GET'])
+@app.route('/work-hours', methods=['GET'])
 def get_work_hours():
     return jsonify(read_data_file(WORK_HOURS_FILE))
 
-@app.route('/api/work-hours', methods=['POST'])
+@app.route('/work-hours', methods=['POST'])
 def update_work_hours():
     data = request.get_json()
     work_hours_data = read_data_file(WORK_HOURS_FILE)
@@ -235,11 +235,11 @@ def update_work_hours():
     
     write_data_file(WORK_HOURS_FILE, work_hours_data)
     return jsonify({"success": True})
-@app.route('/api/reports', methods=['GET'])
+@app.route('/reports', methods=['GET'])
 def get_reports():
     return jsonify(read_data_file(REPORTS_FILE))
 
-@app.route('/api/reports', methods=['POST'])
+@app.route('/reports', methods=['POST'])
 def update_report():
     data = request.get_json()
     reports_data = read_data_file(REPORTS_FILE)
