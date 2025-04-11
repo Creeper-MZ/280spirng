@@ -11,7 +11,8 @@ CORS(app)
 USERS_FILE = 'eris_users.txt'
 TEAMS_FILE = 'teams.txt'
 RESPONSES_FILE = 'responses.txt'
-
+WORK_HOURS_FILE = 'work_hours.txt'
+REPORTS_FILE = 'reports.txt'
 # 辅助函数：读取数据文件
 def read_data_file(filename):
     if not os.path.exists(filename):
@@ -121,6 +122,16 @@ def get_responses_alt():
     return get_responses()
 # 初始化数据文件
 def initialize_data_files():
+    if not os.path.exists(WORK_HOURS_FILE):
+        write_data_file(WORK_HOURS_FILE, {
+            "workHours": []
+        })
+
+    # Initialize reports data
+    if not os.path.exists(REPORTS_FILE):
+        write_data_file(REPORTS_FILE, {
+            "reports": []
+        })
     # 初始化用户数据
     if not os.path.exists(USERS_FILE):
         write_data_file(USERS_FILE, {
@@ -199,9 +210,58 @@ def initialize_data_files():
                 }
             ]
         })
+@app.route('/work-hours', methods=['GET'])
+def get_work_hours():
+    return jsonify(read_data_file(WORK_HOURS_FILE))
 
+@app.route('/work-hours', methods=['POST'])
+def update_work_hours():
+    data = request.get_json()
+    work_hours_data = read_data_file(WORK_HOURS_FILE)
+    
+    # Find and update work hour entry or add new one
+    found = False
+    if 'workHours' not in work_hours_data:
+        work_hours_data['workHours'] = []
+        
+    for i, entry in enumerate(work_hours_data['workHours']):
+        if entry['id'] == data['id']:
+            work_hours_data['workHours'][i] = data
+            found = True
+            break
+    
+    if not found:
+        work_hours_data['workHours'].append(data)
+    
+    write_data_file(WORK_HOURS_FILE, work_hours_data)
+    return jsonify({"success": True})
+@app.route('/reports', methods=['GET'])
+def get_reports():
+    return jsonify(read_data_file(REPORTS_FILE))
+
+@app.route('/reports', methods=['POST'])
+def update_report():
+    data = request.get_json()
+    reports_data = read_data_file(REPORTS_FILE)
+    
+    # Find and update report or add new one
+    found = False
+    if 'reports' not in reports_data:
+        reports_data['reports'] = []
+        
+    for i, report in enumerate(reports_data['reports']):
+        if report['id'] == data['id']:
+            reports_data['reports'][i] = data
+            found = True
+            break
+    
+    if not found:
+        reports_data['reports'].append(data)
+    
+    write_data_file(REPORTS_FILE, reports_data)
+    return jsonify({"success": True})
 if __name__ == '__main__':
     # 初始化数据文件
     initialize_data_files()
     # 运行应用
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host='0.0.0.0')
